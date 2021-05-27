@@ -24,12 +24,15 @@ def search(project, driver):
     url = f'https://baaa.certification.systems/navbar/Search/?search={project_name}'
     response = driver.request('GET', url)
     if not response.status_code == 200:
+        print(f"Project Not found {project_name}")
         return
 
     response_data = response.json()
     for r in response_data:
-        if project_name in r['Result']:
+        if project_name in r['Result'] and len(r['Result']) >= 8:
             return r
+
+    print(f"Project Not found {project_name}")
 
 
 def read_excel(fname):
@@ -88,7 +91,7 @@ def read_config():
         return config
 
 
-def edit_project(driver, targetUrl):
+def edit_project_manager(driver, targetUrl, manager):
     """
     docstring
     """
@@ -99,35 +102,39 @@ def edit_project(driver, targetUrl):
     if len(parts) < 3:
         return
 
-    file_no = parts[1]
+    try:
+        file_no = parts[1]
 
-    url = f"https://baaa.certification.systems/ProjectFile/Edit/{file_no}"
-    print(f"Edit project Url: {url}")
-    driver.get(url)
-    print("Waiting for project manager...")
-    # Scroll first
-    element = WebDriverWait(driver, DEFAULT_WAIT_SEC).until(EC.presence_of_element_located(
-        (By.NAME, 'ProjectFile-ProposalAddress-PostCode')))
-    driver.execute_script("arguments[0].scrollIntoView(true);", element)
+        url = f"https://baaa.certification.systems/ProjectFile/Edit/{file_no}"
+        print(f"Edit project Url: {url}")
+        driver.get(url)
+        print("Waiting for project manager...")
+        # Scroll first
+        element = WebDriverWait(driver, DEFAULT_WAIT_SEC).until(EC.presence_of_element_located(
+            (By.NAME, 'ProjectFile-ProposalAddress-PostCode')))
+        driver.execute_script("arguments[0].scrollIntoView(true);", element)
 
-    element = WebDriverWait(driver, DEFAULT_WAIT_SEC).until(EC.presence_of_element_located(
-        (By.XPATH, '//*[contains(@id,"select2-ProjectFile-ProjectManagerId")]')))
+        element = WebDriverWait(driver, DEFAULT_WAIT_SEC).until(EC.presence_of_element_located(
+            (By.XPATH, '//*[contains(@id,"select2-ProjectFile-ProjectManagerId")]')))
 
-    element.click()
-    time.sleep(2)
-    element = WebDriverWait(driver, DEFAULT_WAIT_SEC).until(EC.presence_of_element_located(
-        (By.CSS_SELECTOR, '.select2-search__field')))
+        element.click()
+        time.sleep(2)
+        element = WebDriverWait(driver, DEFAULT_WAIT_SEC).until(EC.presence_of_element_located(
+            (By.CSS_SELECTOR, '.select2-search__field')))
 
-    element.send_keys("Chris Franklin")
-    element.send_keys(Keys.RETURN)
+        # element.send_keys("Chris Franklin")
+        element.send_keys(manager)
+        element.send_keys(Keys.RETURN)
 
-    element = WebDriverWait(driver, DEFAULT_WAIT_SEC).until(EC.element_to_be_clickable(
-        (By.XPATH, '//*[@id="page-footer-bar"]/div/div/div/div/button[2]')))
-    element.click()
+        element = WebDriverWait(driver, DEFAULT_WAIT_SEC).until(EC.element_to_be_clickable(
+            (By.XPATH, '//*[@id="page-footer-bar"]/div/div/div/div/button[2]')))
+        element.click()
 
-    WebDriverWait(driver, DEFAULT_WAIT_SEC).until(
-        EC.presence_of_element_located((By.ID, 'toggle-view')))
-    print(f"Project with document no. {file_no} updated successfully")
+        WebDriverWait(driver, DEFAULT_WAIT_SEC).until(
+            EC.presence_of_element_located((By.ID, 'toggle-view')))
+        print(f"Project with document no. {file_no} updated successfully")
+    except Exception as e:
+        print(f"Error: {e}")
 
 
 def main():
@@ -136,7 +143,7 @@ def main():
     """
     parser = argparse.ArgumentParser()
     parser.add_argument("--input")
-    parser.add_argument("--manager")
+    parser.add_argument("--manager", default="Chris Franklin")
 
     options = parser.parse_args()
 
@@ -148,13 +155,16 @@ def main():
     driver.get(config['site'])
     login(config, driver)
 
-    for item in items:
+    items_len = len(items)
+    for idx, item in enumerate(items):
+        print(f"Processing {idx+1} of {items_len} items")
+
         project = search(item['Project Name'], driver)
         if not project:
             continue
 
         print(f"Found target Url: {project['TargetUrl']}")
-        edit_project(driver, project['TargetUrl'])
+        edit_project_manager(driver, project['TargetUrl'], options.manager)
 
 
 if __name__ == "__main__":
