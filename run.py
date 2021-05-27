@@ -10,16 +10,22 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from seleniumrequests import Chrome
 import time
-
+import re
 
 DEFAULT_WAIT_SEC = 30
+
+rgx = re.compile(r'B\d+(\.\d+)*')
 
 
 def search(project, driver):
     """
     docstring
     """
-    project_name = project.split('-')[-1]
+    match = rgx.search(project)
+    if not match:
+        return
+
+    project_name = match.group(0)
     print(f"Looking up Project {project_name}")
     url = f'https://baaa.certification.systems/navbar/Search/?search={project_name}'
     response = driver.request('GET', url)
@@ -126,6 +132,7 @@ def edit_project_manager(driver, targetUrl, manager):
         element.send_keys(manager)
         element.send_keys(Keys.RETURN)
 
+        print("Saving updates...")
         element = WebDriverWait(driver, DEFAULT_WAIT_SEC).until(EC.element_to_be_clickable(
             (By.XPATH, '//*[@id="page-footer-bar"]/div/div/div/div/button[2]')))
         element.click()
