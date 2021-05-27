@@ -169,6 +169,7 @@ def main():
     for idx, item in enumerate(items):
         print(f"Processing {idx+1} of {items_len} items")
         if not config['filter'] in item.get('Project Manager', ""):
+            print(f"Skipping project manager {item['Project Manager']}")
             continue
 
         project = search(item['Project Name'], driver)
