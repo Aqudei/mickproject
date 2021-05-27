@@ -11,7 +11,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from seleniumrequests import Chrome
 import time
 import re
-
+import os
 DEFAULT_WAIT_SEC = 30
 
 rgx = re.compile(r'B\d+(\.\d+)*')
@@ -45,6 +45,7 @@ def read_excel(fname):
     """
     docstring
     """
+    print(f"Reading excel file: {os.path.abspath(fname)}")
     wb = openpyxl.load_workbook(fname, data_only=True)
     ws = wb.active
 
@@ -155,7 +156,8 @@ def main():
     options = parser.parse_args()
 
     config = read_config()
-    items = read_excel(options.input)
+
+    items = read_excel(config['input'])
 
     driver = Chrome()
 
@@ -163,6 +165,7 @@ def main():
     login(config, driver)
 
     items_len = len(items)
+    print(f"Updating Project  Manager to: {config['manager']}")
     for idx, item in enumerate(items):
         print(f"Processing {idx+1} of {items_len} items")
 
@@ -171,7 +174,7 @@ def main():
             continue
 
         print(f"Found target Url: {project['TargetUrl']}")
-        edit_project_manager(driver, project['TargetUrl'], options.manager)
+        edit_project_manager(driver, project['TargetUrl'], config['manager'])
 
 
 if __name__ == "__main__":
