@@ -167,8 +167,8 @@ def main():
     login(config, driver)
 
     tasks = download_tasks(config, driver)
-    change_assignee(tasks, config, manager_id, driver)
-    print(f"Tasks len: {len(tasks)}")
+    if tasks and len(tasks) > 0:
+        change_assignee(tasks, config, manager_id, driver)
 
 
 if __name__ == "__main__":
