@@ -41,7 +41,7 @@ def search(project, driver):
     print(f"Project Not found {project_name}")
 
 
-def read_excel(fname):
+def read_excel(fname, filter):
     """
     docstring
     """
@@ -62,6 +62,11 @@ def read_excel(fname):
             item = {}
             for h, v in zip(headers, row):
                 item[h] = v
+            pm = item.get('Project Manager') if item.get(
+                'Project Manager') else ''
+            if not filter in pm.strip():
+                continue
+
             items.append(item)
 
     return items
@@ -157,7 +162,7 @@ def main():
 
     config = read_config()
 
-    items = read_excel(config['input'])
+    items = read_excel(config['input'], config['filter'])
 
     driver = Chrome()
 
