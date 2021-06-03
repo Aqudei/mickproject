@@ -1,0 +1,2 @@
+python task.py
+pause

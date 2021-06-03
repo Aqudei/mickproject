@@ -1,0 +1,2 @@
+python projectmanager.py
+pause
