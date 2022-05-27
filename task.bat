@@ -1,2 +1,2 @@
-python task.py
+.\venv\Scripts\python.exe task.py
 pause
