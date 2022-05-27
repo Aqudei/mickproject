@@ -1,2 +1,2 @@
-python projectmanager.py
+.\venv\Scripts\python.exe projectmanager.py
 pause
